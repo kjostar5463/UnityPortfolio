@@ -3,25 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Player : Entity
+public class Player : MonoBehaviour
 {
     // player status
-    private int exp;
-    private int ammo;
-    private int level = 1;
+    public float exp;
+    public int ammo;
+    public float health;
+    public float breath;
+    public int level = 1;
     private float speed = 5.0f;
     private float reloadSpeed = 1.0f;
     private float damage = 10.0f;
-    private float range = 10.0f;
+    private float spread = 10.0f;
 
     // current state
-    private bool sprint = false;
     private bool reloading = false;
 
     // max value
-    private int maxAmmo = 15;
-    private int maxHP = 100;
-    private int maxExp = 10;
+    public int maxAmmo = 15;
+    public float maxHP = 100f;
+    public float maxExp = 10f;
+    public float maxBreath = 100f;
+    
+    // value limit
+    public float limitSpeed = 10.0f;
 
     // mouse movement
     private float mouseX;
@@ -34,41 +39,48 @@ public class Player : Entity
 
     // references
     private CharacterController characterController;
-    [SerializeField] Text ammoText;
 
     private void Awake()
     {
         health = maxHP;
+        ammo = maxAmmo;
+        breath = maxBreath;
+        exp = 0f;
         characterController = GetComponent<CharacterController>();
-
     }
 
     void Start()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
-        ammo = maxAmmo;
     }
 
     void Update()
     {
         moveMent();
         moveMouse();
-        
-        Debug.Log(level + " " + ammo);
-
-        if (Input.GetKey(KeyCode.LeftShift)) sprint = true;
-        playerSprint();
 
         if (Input.GetMouseButton(0)) bulletFire();
         if (Input.GetKeyDown(KeyCode.R)) reload();
-
-        ammoText.text = ammo.ToString() + " / " + maxAmmo.ToString();
+        if (Input.GetKeyDown(KeyCode.Space)) expTest();
+        levelUp();
     }
 
     private void moveMent()
     {
+        float moveSpeed;
+        if (Input.GetKey(KeyCode.LeftShift) && breath > 0) 
+        {
+            moveSpeed = speed * 1.75f;
+            breath -= 0.1f;
+        }
+        else
+        {
+            moveSpeed = speed;
+            if(breath < maxBreath && !Input.GetKey(KeyCode.LeftShift))
+                breath += 0.5f;
+        }
+
         direction.x = Input.GetAxisRaw("Horizontal");
         direction.z = Input.GetAxisRaw("Vertical");
 
@@ -76,22 +88,7 @@ public class Player : Entity
 
         direction.y -= gravity * Time.deltaTime;
 
-        characterController.Move(transform.TransformDirection(direction) * speed * Time.deltaTime);
-    }
-
-    private void playerSprint()
-    {
-        if (sprint)
-        {
-            speed = 10f;
-            Debug.Log("달림");
-        }
-        else
-        {
-            speed = 5f;
-        }
-
-        sprint = false;
+        characterController.Move(transform.TransformDirection(direction) * moveSpeed * Time.deltaTime);
     }
 
     private void moveMouse()
@@ -100,13 +97,13 @@ public class Player : Entity
 
         transform.eulerAngles = new Vector3(0, mouseX, 0);
     }
+
     private void bulletFire()
     {
         if (ammo > 0)
         {
             ammo--;
 
-            Debug.Log("fire");
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             //닿은 곳의 정보
             RaycastHit hit;
@@ -126,5 +123,20 @@ public class Player : Entity
     private void reload()
     {
         ammo = maxAmmo;
+    }
+
+    private void levelUp()
+    {
+        if(exp >= maxExp)
+        {
+            exp -= maxExp;
+            level++;
+            maxBreath += 50f;
+        }
+    }
+
+    private void expTest()
+    {
+        exp += 5;
     }
 }
