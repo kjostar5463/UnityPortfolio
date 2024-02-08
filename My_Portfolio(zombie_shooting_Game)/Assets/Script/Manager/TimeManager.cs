@@ -6,57 +6,59 @@ using UnityEngine.UI;
 public class TimeManager : Singleton<TimeManager>
 {
     //time value
-    int timeMin;
-    int timeSec;
-    public string stringMin;
-    public string stringSec;
+    int _timeMin;
+    int _timeSec;
+    public string strMin;
+    public string strSec;
 
     //timerColor
-    Color defaultColor = new Color(219 / 255f, 214 / 255f, 187 / 255f);
-    Color warningColor = new Color(255 / 255f, 35 / 255f, 35 / 255f);
+    Color _defaultColor = new Color(219 / 255f, 214 / 255f, 187 / 255f);
+    Color _warningColor = new Color(255 / 255f, 35 / 255f, 35 / 255f);
     public Color timerColor;
+
+    WaitForSeconds _time = new WaitForSeconds(0.1f);
 
     // Start is called before the first frame update
     void Start()
     {
-        timeReset();
+        TimeReset();
         StartCoroutine(TimerCoroutine());
     }
 
     //timer
     IEnumerator TimerCoroutine()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return _time;
 
-        if (timeSec == 0)
+        if (_timeSec == 0)
         {
-            if (timeMin == 0)
+            if (_timeMin == 0)
             {
-                timeReset();
+                TimeReset();
             }
             else
             {
-                timeSec = 59;
-                timeMin--;
+                _timeSec = 59;
+                _timeMin--;
             }
         }
         else
-            timeSec--;
+            _timeSec--;
 
-        if(timeSec < 31 && timeMin == 0)
+        if(_timeSec < 31 && _timeMin == 0)
         {
-            timerColor = warningColor;
+            timerColor = _warningColor;
         }
 
         // integer -> string
-        stringMin = timeMin.ToString();
+        strMin = _timeMin.ToString();
 
-        if(timeSec < 10)
+        if(_timeSec < 10)
         {
-            stringSec = '0' + timeSec.ToString();
+            strSec = '0' + _timeSec.ToString();
         }
         else
-            stringSec = timeSec.ToString();
+            strSec = _timeSec.ToString();
         
             
         StartCoroutine(TimerCoroutine());
@@ -68,10 +70,10 @@ public class TimeManager : Singleton<TimeManager>
     }
 
     //Reset
-    private void timeReset()
+    private void TimeReset()
     {
-        timerColor = defaultColor;
-        timeMin = 3;
-        timeSec = 0;
+        timerColor = _defaultColor;
+        _timeMin = 3;
+        _timeSec = 0;
     }
 }

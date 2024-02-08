@@ -1,0 +1,49 @@
+{
+    "stats": [
+      {
+        "name": "HP",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "BREATH",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "DAMAGE",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "RELOAD",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "SPEED",
+        "defaultValue": "100",
+        "maxValue": "20"
+      },
+      {
+        "name": "RANGE",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "SPREAD",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "AMMO",
+        "defaultValue": "100",
+        "maxValue": "200"
+      },
+      {
+        "name": "SHOTSPEED",
+        "defaultValue": "100",
+        "maxValue": "200"
+      }
+    ]
+  }

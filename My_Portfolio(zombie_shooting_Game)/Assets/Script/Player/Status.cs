@@ -13,7 +13,8 @@ public class Status : MonoBehaviour
         SPEED,
         RANGE,
         SPREAD,
-        AMMO
+        AMMO,
+        SHOTSPEED
     }
     // Start is called before the first frame update
     void Start()

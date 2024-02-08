@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,13 +12,14 @@ public class Player : MonoBehaviour
     public float health;
     public float breath;
     public int level = 1;
+    private float shotSpeed = 1.0f;
     private float speed = 5.0f;
     private float reloadSpeed = 1.0f;
     private float damage = 10.0f;
     private float spread = 10.0f;
 
     // current state
-    private bool reloading = false;
+    private bool isReloading = false;
 
     // max value
     public int maxAmmo = 15;
@@ -35,10 +37,16 @@ public class Player : MonoBehaviour
     private float gravity = 100.0f;
 
     // parameters
-    private Vector3 direction;
+    private Vector3 moveDirection;
 
     // references
     private CharacterController characterController;
+    [SerializeField] private GameObject levelPanel;
+    [SerializeField] private GameObject menu;
+    [SerializeField] private GameObject status;
+    [SerializeField] private GameObject grenade;
+    [SerializeField] private GameObject mainCam;
+    [SerializeField] private GameObject thorwPos;
 
     private void Awake()
     {
@@ -52,27 +60,48 @@ public class Player : MonoBehaviour
     void Start()
     {
         Cursor.visible = false;
+
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update()
     {
-        moveMent();
-        moveMouse();
+        MoveMent();
+        MoveMouse();
 
-        if (Input.GetMouseButton(0)) bulletFire();
-        if (Input.GetKeyDown(KeyCode.R)) reload();
-        if (Input.GetKeyDown(KeyCode.Space)) expTest();
-        levelUp();
+        if (Input.GetMouseButton(0))
+            BulletFire();
+
+        if (Input.GetKeyDown(KeyCode.R))
+            Reload();
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            GrenadeThrow();
+
+        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+            PauseGame();
+
+        if (Input.GetKey(KeyCode.Tab))
+            OpenStaus();
+        else if(Input.GetKeyUp(KeyCode.Tab))
+            CloseStaus();
+
+        LevelUp();
+        if (Input.GetKeyDown(KeyCode.Z)) HPest();
     }
 
-    private void moveMent()
+    private void MoveMent()
     {
+        moveDirection.x = Input.GetAxisRaw("Horizontal");
+        moveDirection.z = Input.GetAxisRaw("Vertical");
+
         float moveSpeed;
         if (Input.GetKey(KeyCode.LeftShift) && breath > 0) 
         {
             moveSpeed = speed * 1.75f;
-            breath -= 0.1f;
+
+            if(moveDirection.x != 0 || moveDirection.z != 0) // player is moveing
+                breath -= 0.1f;
         }
         else
         {
@@ -81,24 +110,21 @@ public class Player : MonoBehaviour
                 breath += 0.5f;
         }
 
-        direction.x = Input.GetAxisRaw("Horizontal");
-        direction.z = Input.GetAxisRaw("Vertical");
+        moveDirection.Normalize();
 
-        direction.Normalize();
+        moveDirection.y -= gravity * Time.deltaTime;
 
-        direction.y -= gravity * Time.deltaTime;
-
-        characterController.Move(transform.TransformDirection(direction) * moveSpeed * Time.deltaTime);
+        characterController.Move(transform.TransformDirection(moveDirection) * moveSpeed * Time.deltaTime);
     }
 
-    private void moveMouse()
+    private void MoveMouse()
     {
-        mouseX += Input.GetAxisRaw("Mouse X");
+        mouseX += Input.GetAxisRaw("Mouse X") * Time.timeScale;
 
         transform.eulerAngles = new Vector3(0, mouseX, 0);
     }
 
-    private void bulletFire()
+    private void BulletFire()
     {
         if (ammo > 0)
         {
@@ -120,23 +146,56 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void reload()
+    private void Reload()
     {
         ammo = maxAmmo;
     }
 
-    private void levelUp()
+    private void GrenadeThrow()
+    {
+        GameObject instantGrenade = Instantiate(grenade, thorwPos.transform.position, transform.rotation);
+        Rigidbody grenadeRB = instantGrenade.GetComponent<Rigidbody>();
+        grenadeRB.AddForce(mainCam.transform.forward * 15f, ForceMode.Impulse);
+    }
+
+    private void LevelUp()
     {
         if(exp >= maxExp)
         {
             exp -= maxExp;
             level++;
-            maxBreath += 50f;
+
+            levelPanel.SetActive(true);
+
+            Cursor.visible = true;
+
+            Cursor.lockState = CursorLockMode.None;
+            Time.timeScale = 0;
         }
     }
 
-    private void expTest()
+    private void PauseGame()
+    {
+        Time.timeScale = 0;
+        menu.SetActive(true);
+    }
+
+    private void OpenStaus()
+    {
+        status.SetActive(true);
+    }
+    private void CloseStaus()
+    {
+        status.SetActive(false);
+    }
+
+    private void ExpTest()
     {
         exp += 5;
+    }
+    private void HPest()
+    {
+        health -= 20;
+        if(health <= 0) GameManager.Instance.isDead = true;
     }
 }
